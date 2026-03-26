@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { MOCK_PROJECTS, Project, ProjectFile } from '../constants';
 
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+
 export const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,11 +33,13 @@ export const ProjectDetail = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchProject = async () => {
+      if (!id) return;
       try {
-        const res = await fetch(`/api/projects/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setProject(data);
+        const docRef = doc(db, 'projects', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          setProject({ id: docSnap.id, ...docSnap.data() } as Project);
         } else {
           const mock = MOCK_PROJECTS.find(p => p.id === id);
           setProject(mock || null);

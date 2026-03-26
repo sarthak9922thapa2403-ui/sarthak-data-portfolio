@@ -14,6 +14,9 @@ import {
   Project 
 } from '../constants';
 
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '../firebase';
+
 export const Portfolio = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -22,25 +25,28 @@ export const Portfolio = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const res = await fetch('/api/projects');
-      if (res.ok) {
-        const data = await res.json();
-        setProjects(data);
+    
+    const q = query(collection(db, 'projects'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const fetchedProjects = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Project[];
+        setProjects(fetchedProjects);
+        setIsLoading(false);
       } else {
         setProjects(MOCK_PROJECTS);
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to fetch projects', err);
+    }, (error) => {
+      console.error('Error fetching projects from Firebase:', error);
       setProjects(MOCK_PROJECTS);
-    } finally {
       setIsLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

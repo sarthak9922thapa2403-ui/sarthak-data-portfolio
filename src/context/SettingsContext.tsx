@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SERVICES } from '../constants';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export interface SiteSettings {
   hero_title: string;
@@ -49,20 +51,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch('/api/settings');
-        if (res.ok) {
-          const data = await res.json();
-          setSettings({ ...defaultSettings, ...data });
-        }
-      } catch (err) {
-        console.error('Failed to fetch settings', err);
-      } finally {
-        setIsLoading(false);
+    const settingsRef = doc(db, 'settings', 'site_settings');
+    
+    // Set up real-time listener
+    const unsubscribe = onSnapshot(settingsRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setSettings({ ...defaultSettings, ...docSnap.data() as SiteSettings });
+      } else {
+        setSettings(defaultSettings);
       }
-    };
-    fetchSettings();
+      setIsLoading(false);
+    }, (error) => {
+      console.error('Error fetching settings from Firebase:', error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (

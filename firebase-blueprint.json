@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "A portfolio project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "files": { "type": "array", "items": { "type": "object" } },
+        "thumbnail": { "type": "string" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "category", "tags", "files", "thumbnail"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Site global settings",
+      "type": "object",
+      "properties": {
+        "hero_title": { "type": "string" },
+        "hero_subtitle": { "type": "string" },
+        "about_text": { "type": "string" },
+        "contact_email": { "type": "string" },
+        "contact_phone": { "type": "string" },
+        "contact_location": { "type": "string" },
+        "social_linkedin": { "type": "string" },
+        "social_upwork": { "type": "string" },
+        "social_fiverr": { "type": "string" },
+        "social_links": { "type": "string" },
+        "hero_image": { "type": "string" },
+        "services": { "type": "string" },
+        "highlights": { "type": "string" },
+        "stats": { "type": "string" },
+        "project_tags": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Portfolio projects"
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/Settings" },
+      "description": "Site settings document"
+    }
+  }
+}

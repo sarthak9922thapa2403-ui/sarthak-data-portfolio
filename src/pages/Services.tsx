@@ -86,7 +86,7 @@ export const Services = () => {
             >
               {service.imageUrl && (
                 <div
-                  className="absolute inset-0 z-0 bg-cover bg-center opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+                  className="absolute inset-0 z-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500"
                   style={{ backgroundImage: `url(${service.imageUrl})` }}
                 />
               )}

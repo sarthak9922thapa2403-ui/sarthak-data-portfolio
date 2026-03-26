@@ -26,6 +26,9 @@ import {
 } from '../constants';
 // import { FilePreview } from '../components/FilePreview';
 
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
+
 export const Home = () => {
   const navigate = useNavigate();
   const { settings } = useSettings();
@@ -70,21 +73,21 @@ export const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch('/api/projects');
-        if (res.ok) {
-          const data = await res.json();
-          setProjects(data);
-        } else {
-          setProjects(MOCK_PROJECTS);
-        }
-      } catch (err) {
-        console.error('Failed to fetch projects', err);
+    const q = query(collection(db, 'projects'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const fetchedProjects = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Project[];
+        setProjects(fetchedProjects);
+      } else {
         setProjects(MOCK_PROJECTS);
       }
-    };
-    fetchProjects();
+    }, (error) => {
+      console.error('Error fetching projects from Firebase:', error);
+      setProjects(MOCK_PROJECTS);
+    });
 
     const hash = window.location.hash;
     if (hash) {
@@ -96,6 +99,8 @@ export const Home = () => {
         }, 100);
       }
     }
+
+    return () => unsubscribe();
   }, []);
 
   const { scrollYProgress } = useScroll({
@@ -281,7 +286,7 @@ export const Home = () => {
               >
                 {service.imageUrl && (
                   <div
-                    className="absolute inset-0 z-0 bg-cover bg-center opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+                    className="absolute inset-0 z-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500"
                     style={{ backgroundImage: `url(${service.imageUrl})` }}
                   />
                 )}
