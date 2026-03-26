@@ -13,11 +13,12 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { SERVICES } from '../constants';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
 
 export const Services = () => {
   const { settings } = useSettings();
+  const navigate = useNavigate();
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -82,11 +83,12 @@ export const Services = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="glass-card p-10 group hover:bg-white/5 transition-all duration-500 relative overflow-hidden"
+              onClick={() => navigate(`/portfolio?service=${encodeURIComponent(service.title)}`)}
+              className="glass-card p-10 group hover:bg-white/5 transition-all duration-500 relative overflow-hidden cursor-pointer"
             >
               {service.imageUrl && (
                 <div
-                  className="absolute inset-0 z-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500"
+                  className="absolute inset-0 z-0 bg-cover bg-center opacity-0 group-hover:opacity-30 transition-opacity duration-500"
                   style={{ backgroundImage: `url(${service.imageUrl})` }}
                 />
               )}

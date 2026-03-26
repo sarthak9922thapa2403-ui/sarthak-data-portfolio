@@ -7,7 +7,7 @@ import {
   Search,
   ArrowRight
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import { 
   MOCK_PROJECTS, 
@@ -18,10 +18,23 @@ import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const Portfolio = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('service') || '';
+  });
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const service = params.get('service');
+    if (service) {
+      setSearchQuery(service);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

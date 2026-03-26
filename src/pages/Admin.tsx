@@ -25,7 +25,7 @@ export function Admin() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === 'sarthak9922thapa2403@gmail.com' && user.emailVerified) {
+      if (user && user.email?.toLowerCase() === 'sarthak9922thapa2403@gmail.com') {
         setIsAuthenticated(true);
         fetchProjects();
         fetchSettings();
@@ -59,15 +59,17 @@ export function Admin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      if (result.user.email !== 'sarthak9922thapa2403@gmail.com') {
+      if (result.user.email?.toLowerCase() !== 'sarthak9922thapa2403@gmail.com') {
         setError('Unauthorized email address. Please use the admin email.');
         await signOut(auth);
       }
-    } catch (err) {
-      setError('Login failed');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed');
     }
   };
 

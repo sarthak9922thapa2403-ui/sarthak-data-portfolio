@@ -282,11 +282,12 @@ export const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-8 glass-card group hover:bg-accent/5 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden"
+                onClick={() => navigate(`/portfolio?service=${encodeURIComponent(service.title)}`)}
+                className="p-8 glass-card group hover:bg-accent/5 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden cursor-pointer"
               >
                 {service.imageUrl && (
                   <div
-                    className="absolute inset-0 z-0 bg-cover bg-center opacity-20 group-hover:opacity-40 transition-opacity duration-500"
+                    className="absolute inset-0 z-0 bg-cover bg-center opacity-0 group-hover:opacity-30 transition-opacity duration-500"
                     style={{ backgroundImage: `url(${service.imageUrl})` }}
                   />
                 )}
