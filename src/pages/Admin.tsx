@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Project, ProjectFile, SERVICES, HIGHLIGHTS, STATS } from '../constants';
+import { Project, ProjectFile, SERVICES, HIGHLIGHTS, STATS, MOCK_PROJECTS } from '../constants';
 import { Plus, Edit, Trash2, LogOut, Save, X, Settings as SettingsIcon, LayoutDashboard, Layers, Star, BarChart, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { collection, doc, getDocs, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
@@ -18,7 +18,7 @@ export function Admin() {
   const [editingHighlight, setEditingHighlight] = useState<{title: string, index: number} | null>(null);
   const [editingStat, setEditingStat] = useState<{label: string, value: string, index: number} | null>(null);
   const [editingTag, setEditingTag] = useState<{name: string, index: number} | null>(null);
-  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settings, setSettings] = useState<Record<string, any>>({});
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{type: 'project' | 'service' | 'highlight' | 'stat', id: string | number} | null>(null);
@@ -39,6 +39,26 @@ export function Admin() {
   const fetchProjects = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'projects'));
+      
+      if (querySnapshot.empty) {
+        const docSnap = await getDoc(doc(db, 'settings', 'site_settings'));
+        const settingsData = docSnap.exists() ? docSnap.data() : {};
+        
+        if (!settingsData.projectsSeeded) {
+          // Seed the database with MOCK_PROJECTS
+          for (const p of MOCK_PROJECTS) {
+            await setDoc(doc(db, 'projects', p.id), p);
+          }
+          await setDoc(doc(db, 'settings', 'site_settings'), { projectsSeeded: true }, { merge: true });
+          
+          // Fetch again after seeding
+          const newSnapshot = await getDocs(collection(db, 'projects'));
+          const data = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+          setProjects(data);
+          return;
+        }
+      }
+
       const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
       setProjects(data);
     } catch (err) {
@@ -602,7 +622,7 @@ export function Admin() {
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-muted-foreground mb-1">Tags</label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {(() => {
                   let tagsList: any[] = [];
                   try { 
@@ -627,6 +647,87 @@ export function Admin() {
                     </label>
                   ));
                 })()}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add new tag..."
+                  id="new-tag-input"
+                  className="bg-background/50 border border-white/10 rounded-lg px-4 py-2 text-sm flex-1"
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const input = e.currentTarget;
+                      const newTagName = input.value.trim();
+                      if (newTagName) {
+                        // Add to project tags
+                        if (!editingProject.tags.includes(newTagName)) {
+                          setEditingProject({...editingProject, tags: [...editingProject.tags, newTagName]});
+                        }
+                        
+                        // Add to global tags if it doesn't exist
+                        let currentTags: any[] = [];
+                        try {
+                          if (settings.project_tags) {
+                            currentTags = JSON.parse(settings.project_tags);
+                          }
+                        } catch (err) {}
+                        
+                        if (!currentTags.find(t => t.name === newTagName)) {
+                          currentTags.push({ name: newTagName });
+                          const newSettings = { ...settings, project_tags: JSON.stringify(currentTags) };
+                          setSettings(newSettings);
+                          try {
+                            const { doc, setDoc } = await import('firebase/firestore');
+                            const { db } = await import('../firebase');
+                            await setDoc(doc(db, 'settings', 'site_settings'), newSettings, { merge: true });
+                          } catch (err) {
+                            console.error("Error saving new tag:", err);
+                          }
+                        }
+                        input.value = '';
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const input = document.getElementById('new-tag-input') as HTMLInputElement;
+                    const newTagName = input.value.trim();
+                    if (newTagName) {
+                      // Add to project tags
+                      if (!editingProject.tags.includes(newTagName)) {
+                        setEditingProject({...editingProject, tags: [...editingProject.tags, newTagName]});
+                      }
+                      
+                      // Add to global tags if it doesn't exist
+                      let currentTags: any[] = [];
+                      try {
+                        if (settings.project_tags) {
+                          currentTags = JSON.parse(settings.project_tags);
+                        }
+                      } catch (err) {}
+                      
+                      if (!currentTags.find(t => t.name === newTagName)) {
+                        currentTags.push({ name: newTagName });
+                        const newSettings = { ...settings, project_tags: JSON.stringify(currentTags) };
+                        setSettings(newSettings);
+                        try {
+                          const { doc, setDoc } = await import('firebase/firestore');
+                          const { db } = await import('../firebase');
+                          await setDoc(doc(db, 'settings', 'site_settings'), newSettings, { merge: true });
+                        } catch (err) {
+                          console.error("Error saving new tag:", err);
+                        }
+                      }
+                      input.value = '';
+                    }
+                  }}
+                  className="bg-accent text-background px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/90"
+                >
+                  Add Tag
+                </button>
               </div>
             </div>
           </div>
@@ -822,6 +923,68 @@ export function Admin() {
                       <div>
                         <h3 className="font-bold">{project.title}</h3>
                         <p className="text-sm text-muted-foreground">{project.category} • {project.files.length} files</p>
+                        <div className="flex flex-wrap gap-1 mt-2 items-center">
+                          {project.tags.map(tag => (
+                            <span key={tag} className="text-xs bg-white/10 px-2 py-1 rounded-full flex items-center gap-1">
+                              {tag}
+                              <button
+                                onClick={async () => {
+                                  const updatedProject = { ...project, tags: project.tags.filter(t => t !== tag) };
+                                  try {
+                                    const { doc, setDoc } = await import('firebase/firestore');
+                                    const { db } = await import('../firebase');
+                                    await setDoc(doc(db, 'projects', project.id), updatedProject);
+                                    setProjects(projects.map(p => p.id === project.id ? updatedProject : p));
+                                  } catch (err) {
+                                    console.error("Error removing tag:", err);
+                                  }
+                                }}
+                                className="hover:text-red-400 transition-colors"
+                              >
+                                &times;
+                              </button>
+                            </span>
+                          ))}
+                          <input
+                            type="text"
+                            placeholder="+ Add tag"
+                            className="text-xs bg-background/50 border border-white/10 rounded-full px-2 py-1 w-20 focus:w-32 transition-all outline-none focus:border-accent"
+                            onKeyDown={async (e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const input = e.currentTarget;
+                                const newTagName = input.value.trim();
+                                if (newTagName && !project.tags.includes(newTagName)) {
+                                  const updatedProject = { ...project, tags: [...project.tags, newTagName] };
+                                  try {
+                                    const { doc, setDoc } = await import('firebase/firestore');
+                                    const { db } = await import('../firebase');
+                                    await setDoc(doc(db, 'projects', project.id), updatedProject);
+                                    setProjects(projects.map(p => p.id === project.id ? updatedProject : p));
+                                    
+                                    // Also add to global tags if not exists
+                                    let currentTags: any[] = [];
+                                    try {
+                                      if (settings.project_tags) {
+                                        currentTags = JSON.parse(settings.project_tags);
+                                      }
+                                    } catch (err) {}
+                                    
+                                    if (!currentTags.find(t => t.name === newTagName)) {
+                                      currentTags.push({ name: newTagName });
+                                      const newSettings = { ...settings, project_tags: JSON.stringify(currentTags) };
+                                      setSettings(newSettings);
+                                      await setDoc(doc(db, 'settings', 'site_settings'), newSettings, { merge: true });
+                                    }
+                                    input.value = '';
+                                  } catch (err) {
+                                    console.error("Error adding tag:", err);
+                                  }
+                                }
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2">

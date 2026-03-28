@@ -14,6 +14,7 @@ import {
   Eye
 } from 'lucide-react';
 import { MOCK_PROJECTS, Project, ProjectFile } from '../constants';
+import { useSettings } from '../context/SettingsContext';
 
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -21,6 +22,7 @@ import { db } from '../firebase';
 export const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { settings } = useSettings();
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [isEmbedLoaded, setIsEmbedLoaded] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
@@ -41,19 +43,27 @@ export const ProjectDetail = () => {
         if (docSnap.exists()) {
           setProject({ id: docSnap.id, ...docSnap.data() } as Project);
         } else {
-          const mock = MOCK_PROJECTS.find(p => p.id === id);
-          setProject(mock || null);
+          if (!settings.projectsSeeded) {
+            const mock = MOCK_PROJECTS.find(p => p.id === id);
+            setProject(mock || null);
+          } else {
+            setProject(null);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch project', err);
-        const mock = MOCK_PROJECTS.find(p => p.id === id);
-        setProject(mock || null);
+        if (!settings.projectsSeeded) {
+          const mock = MOCK_PROJECTS.find(p => p.id === id);
+          setProject(mock || null);
+        } else {
+          setProject(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
     fetchProject();
-  }, [id]);
+  }, [id, settings.projectsSeeded]);
 
   if (isLoading) {
     return (

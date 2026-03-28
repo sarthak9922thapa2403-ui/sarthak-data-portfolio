@@ -8,6 +8,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext';
 
 import { 
   MOCK_PROJECTS, 
@@ -20,6 +21,7 @@ import { db } from '../firebase';
 export const Portfolio = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { settings } = useSettings();
   
   const [searchQuery, setSearchQuery] = useState(() => {
     const params = new URLSearchParams(location.search);
@@ -49,17 +51,25 @@ export const Portfolio = () => {
         setProjects(fetchedProjects);
         setIsLoading(false);
       } else {
-        setProjects(MOCK_PROJECTS);
+        if (!settings.projectsSeeded) {
+          setProjects(MOCK_PROJECTS);
+        } else {
+          setProjects([]);
+        }
         setIsLoading(false);
       }
     }, (error) => {
       console.error('Error fetching projects from Firebase:', error);
-      setProjects(MOCK_PROJECTS);
+      if (!settings.projectsSeeded) {
+        setProjects(MOCK_PROJECTS);
+      } else {
+        setProjects([]);
+      }
       setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [settings.projectsSeeded]);
 
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

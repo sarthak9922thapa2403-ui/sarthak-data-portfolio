@@ -19,6 +19,7 @@ export interface SiteSettings {
   highlights: string;
   stats: string;
   project_tags: string;
+  projectsSeeded?: boolean;
 }
 
 const defaultSettings: SiteSettings = {

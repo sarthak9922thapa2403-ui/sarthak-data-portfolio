@@ -82,11 +82,19 @@ export const Home = () => {
         })) as Project[];
         setProjects(fetchedProjects);
       } else {
-        setProjects(MOCK_PROJECTS);
+        if (!settings.projectsSeeded) {
+          setProjects(MOCK_PROJECTS);
+        } else {
+          setProjects([]);
+        }
       }
     }, (error) => {
       console.error('Error fetching projects from Firebase:', error);
-      setProjects(MOCK_PROJECTS);
+      if (!settings.projectsSeeded) {
+        setProjects(MOCK_PROJECTS);
+      } else {
+        setProjects([]);
+      }
     });
 
     const hash = window.location.hash;
@@ -101,7 +109,7 @@ export const Home = () => {
     }
 
     return () => unsubscribe();
-  }, []);
+  }, [settings.projectsSeeded]);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
