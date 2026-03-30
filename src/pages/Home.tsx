@@ -14,7 +14,8 @@ import {
   Mail,
   Phone,
   Send,
-  CheckCircle
+  CheckCircle,
+  Share2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
@@ -28,6 +29,7 @@ import {
 
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
+import { extractUrl } from '../utils/url';
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -350,7 +352,7 @@ export const Home = () => {
                   >
                     <div className="aspect-video overflow-hidden">
                       <img 
-                        src={project.thumbnail} 
+                        src={extractUrl(project.thumbnail)} 
                         alt={project.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         referrerPolicy="no-referrer"
@@ -506,6 +508,25 @@ export const Home = () => {
                       <p className="text-lg font-bold">+91 9368579922</p>
                     </div>
                   </a>
+
+                  {(() => {
+                    try {
+                      const links = JSON.parse(settings.social_links || '[]');
+                      return links.map((link: { title: string, url: string }, index: number) => (
+                        <a key={index} href={link.url} target="_blank" rel="noreferrer" className="flex items-center gap-6 p-6 glass-card hover:bg-accent/5 transition-colors group relative overflow-hidden">
+                          <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center group-hover:bg-accent group-hover:text-background transition-all relative z-10">
+                            <Share2 className="w-6 h-6" />
+                          </div>
+                          <div className="relative z-10">
+                            <p className="text-xs text-white/80 font-bold uppercase tracking-widest mb-1">Social</p>
+                            <p className="text-lg font-bold">{link.title}</p>
+                          </div>
+                        </a>
+                      ));
+                    } catch (e) {
+                      return null;
+                    }
+                  })()}
                 </div>
               </motion.div>
 

@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { collection, doc, getDocs, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../firebase';
+import { extractUrl } from '../utils/url';
 
 export function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1024,7 +1025,7 @@ export function Admin() {
                 {projects.filter(p => selectedTag === 'All' || p.tags.includes(selectedTag)).map(project => (
                   <div key={project.id} className="glass-card p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <img src={project.thumbnail} alt={project.title} className="w-16 h-16 object-cover rounded-lg" />
+                      <img src={extractUrl(project.thumbnail)} alt={project.title} className="w-16 h-16 object-cover rounded-lg" />
                       <div>
                         <h3 className="font-bold">{project.title}</h3>
                         <p className="text-sm text-muted-foreground">{project.category} • {project.files.length} files</p>

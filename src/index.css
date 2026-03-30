@@ -13,9 +13,6 @@
 }
 
 @layer base {
-  html {
-    font-size: 90%; /* Scales down all rem units to make the site feel less zoomed in */
-  }
   body {
     @apply bg-background text-text-primary font-sans antialiased selection:bg-accent/30 selection:text-accent;
   }

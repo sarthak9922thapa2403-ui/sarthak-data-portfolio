@@ -18,6 +18,7 @@ import { useSettings } from '../context/SettingsContext';
 
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { extractUrl } from '../utils/url';
 
 export const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -103,9 +104,10 @@ export const ProjectDetail = () => {
 
   const renderPreview = () => {
     if (currentFile.type === 'image') {
+      let imageUrl = extractUrl(currentFile.url);
       return (
         <img 
-          src={currentFile.url.startsWith('#') ? project.thumbnail : currentFile.url} 
+          src={imageUrl.startsWith('#') ? extractUrl(project.thumbnail) : imageUrl} 
           alt={currentFile.name}
           className="max-h-full max-w-full object-contain rounded-lg shadow-2xl"
           referrerPolicy="no-referrer"
@@ -115,6 +117,7 @@ export const ProjectDetail = () => {
 
     if (currentFile.type === 'pdf' || currentFile.type === 'excel' || currentFile.type === 'word') {
       if (currentFile.url && currentFile.url !== '#') {
+        let validUrl = extractUrl(currentFile.url);
         return (
           <div className="w-full h-full flex flex-col gap-4">
             <div className="flex-1 bg-white rounded-lg overflow-hidden border border-white/10 shadow-2xl min-h-[500px] relative">
@@ -136,7 +139,7 @@ export const ProjectDetail = () => {
                 </div>
               ) : (
                 <iframe 
-                  src={currentFile.url} 
+                  src={validUrl} 
                   className="w-full h-full border-none"
                   title={currentFile.name}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -146,7 +149,7 @@ export const ProjectDetail = () => {
               )}
             </div>
             <a 
-              href={currentFile.url} 
+              href={validUrl} 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-6 py-3 bg-accent text-background font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 hover-glow"

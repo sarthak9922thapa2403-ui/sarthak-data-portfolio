@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone, MessageSquare, Send } from 'lucide-react';
+import { Mail, Phone, MessageSquare, Send, Share2 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 export const Contact = () => {
@@ -115,6 +115,25 @@ export const Contact = () => {
                     <p className="text-lg font-bold">{settings.contact_phone}</p>
                   </div>
                 </a>
+
+                {(() => {
+                  try {
+                    const links = JSON.parse(settings.social_links || '[]');
+                    return links.map((link: { title: string, url: string }, index: number) => (
+                      <a key={index} href={link.url} target="_blank" rel="noreferrer" className="flex items-center gap-6 p-6 glass-card hover:bg-accent/5 transition-colors group relative overflow-hidden">
+                        <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center group-hover:bg-accent group-hover:text-background transition-all relative z-10">
+                          <Share2 className="w-6 h-6" />
+                        </div>
+                        <div className="relative z-10">
+                          <p className="text-xs text-text-secondary font-bold uppercase tracking-widest mb-1">Social</p>
+                          <p className="text-lg font-bold">{link.title}</p>
+                        </div>
+                      </a>
+                    ));
+                  } catch (e) {
+                    return null;
+                  }
+                })()}
               </div>
             </motion.div>
 

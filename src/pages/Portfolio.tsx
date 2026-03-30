@@ -17,6 +17,7 @@ import {
 
 import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../firebase';
+import { extractUrl } from '../utils/url';
 
 export const Portfolio = () => {
   const location = useLocation();
@@ -132,7 +133,7 @@ export const Portfolio = () => {
                 >
                   <div className="aspect-video overflow-hidden relative">
                     <img 
-                      src={project.thumbnail} 
+                      src={extractUrl(project.thumbnail)} 
                       alt={project.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       referrerPolicy="no-referrer"
