@@ -19,13 +19,6 @@
   body {
     @apply bg-background text-text-primary font-sans antialiased selection:bg-accent/30 selection:text-accent;
   }
-  
-  /* Prevent iOS Safari auto-zoom on inputs by ensuring they are at least 16px */
-  @media screen and (max-width: 768px) {
-    input, textarea, select {
-      font-size: 16px !important;
-    }
-  }
 }
 
 @layer utilities {
