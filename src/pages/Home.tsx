@@ -178,10 +178,10 @@ export const Home = () => {
                 Data Processing Specialist
               </span>
               <div className="mb-8">
-                <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9] mb-4 text-text-primary">
+                <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[0.9] mb-4 text-text-primary">
                   Sarthak Thapa
                 </h1>
-                <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1] text-text-primary">
+                <h2 className="text-3xl md:text-6xl font-semibold tracking-tight leading-[1.1] text-text-primary">
                   <span className="gradient-text pb-2">Transforming Raw Data</span><br />
                   into Structured Intelligence.
                 </h2>
@@ -210,9 +210,9 @@ export const Home = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-32 bg-secondary-bg/30">
+      <section id="about" className="py-20 md:py-32 bg-secondary-bg/30">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-20 items-center">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -273,10 +273,10 @@ export const Home = () => {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-32">
+      <section id="services" className="py-20 md:py-32">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">My Services</h2>
+          <div className="text-center max-w-3xl mx-auto mb-12 md:mb-20">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 gradient-text">My Services</h2>
             <p className="text-white text-lg">
               Comprehensive data solutions tailored to your specific needs, ensuring accuracy and efficiency at every step.
             </p>
@@ -324,11 +324,11 @@ export const Home = () => {
       </section>
 
       {/* Portfolio Section */}
-      <section id="portfolio" className="py-32 bg-secondary-bg/30">
+      <section id="portfolio" className="py-20 md:py-32 bg-secondary-bg/30">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-8">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">Featured Projects</h2>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 gradient-text">Featured Projects</h2>
               <p className="text-white text-lg max-w-xl">
                 A showcase of my expertise in data processing, cleaning, and complex conversions.
               </p>
@@ -410,12 +410,12 @@ export const Home = () => {
       </section>
 
       {/* Why Choose Me Section */}
-      <section className="py-32 overflow-hidden">
+      <section className="py-20 md:py-32 overflow-hidden">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
               <div className="absolute -top-20 -left-20 w-64 h-64 bg-accent/20 rounded-full blur-[100px]" />
-              <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center gradient-text">Why Choose Me?</h2>
+              <h2 className="text-3xl md:text-5xl font-bold mb-12 text-center gradient-text">Why Choose Me?</h2>
               
               <div className="space-y-8">
                 {[
@@ -447,10 +447,10 @@ export const Home = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-32 bg-secondary-bg/30">
+      <section id="contact" className="py-20 md:py-32 bg-secondary-bg/30">
         <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">Contact Me</h2>
+          <div className="max-w-4xl mx-auto text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 gradient-text">Contact Me</h2>
             <p className="text-white text-lg">
               For inquiries, collaborations, or project discussions, please don’t hesitate to get in touch. I look forward to working with you.
             </p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectFile, SERVICES, HIGHLIGHTS, STATS, MOCK_PROJECTS } from '../constants';
-import { Plus, Edit, Trash2, LogOut, Save, X, Settings as SettingsIcon, LayoutDashboard, Layers, Star, BarChart, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Save, X, Settings as SettingsIcon, LayoutDashboard, Layers, Star, BarChart, Tag, Share2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { collection, doc, getDocs, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -12,16 +12,17 @@ export function Admin() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'projects' | 'services' | 'highlights' | 'stats' | 'tags' | 'settings'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'services' | 'highlights' | 'stats' | 'tags' | 'settings' | 'socials'>('projects');
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [editingService, setEditingService] = useState<{title: string, description: string, imageUrl?: string, index: number} | null>(null);
   const [editingHighlight, setEditingHighlight] = useState<{title: string, index: number} | null>(null);
   const [editingStat, setEditingStat] = useState<{label: string, value: string, index: number} | null>(null);
   const [editingTag, setEditingTag] = useState<{name: string, index: number} | null>(null);
+  const [editingSocial, setEditingSocial] = useState<{title: string, url: string, index: number} | null>(null);
   const [settings, setSettings] = useState<Record<string, any>>({});
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{text: string, type: 'success' | 'error'} | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{type: 'project' | 'service' | 'highlight' | 'stat', id: string | number} | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{type: 'project' | 'service' | 'highlight' | 'stat' | 'tag' | 'social', id: string | number} | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -343,6 +344,57 @@ export function Admin() {
     }
   };
 
+  const handleSaveSocial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSocial) return;
+
+    let currentSocials: any[] = [];
+    try { 
+      if (settings.social_links) {
+        currentSocials = JSON.parse(settings.social_links);
+      }
+    } catch (e) {}
+
+    if (editingSocial.index === -1) {
+      currentSocials.push({ title: editingSocial.title, url: editingSocial.url });
+    } else {
+      currentSocials[editingSocial.index] = { title: editingSocial.title, url: editingSocial.url };
+    }
+
+    const newSettings = { ...settings, social_links: JSON.stringify(currentSocials) };
+    setSettings(newSettings);
+
+    try {
+      await setDoc(doc(db, 'settings', 'site_settings'), { social_links: JSON.stringify(currentSocials) }, { merge: true });
+      setEditingSocial(null);
+    } catch (err) {
+      console.error('Failed to save social link', err);
+    }
+  };
+
+  const handleDeleteSocial = (index: number) => {
+    setDeleteConfirm({ type: 'social', id: index });
+  };
+
+  const executeDeleteSocial = async (index: number) => {
+    let currentSocials: any[] = [];
+    try { 
+      if (settings.social_links) {
+        currentSocials = JSON.parse(settings.social_links);
+      }
+    } catch (e) {}
+
+    currentSocials.splice(index, 1);
+    const newSettings = { ...settings, social_links: JSON.stringify(currentSocials) };
+    setSettings(newSettings);
+
+    try {
+      await setDoc(doc(db, 'settings', 'site_settings'), { social_links: JSON.stringify(currentSocials) }, { merge: true });
+    } catch (err) {
+      console.error('Failed to delete social link', err);
+    }
+  };
+
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingSettings(true);
@@ -546,6 +598,53 @@ export function Admin() {
             </button>
             <button type="submit" className="px-6 py-2 bg-accent text-background font-medium rounded-lg hover:bg-accent/90 flex items-center gap-2">
               <Save className="w-4 h-4" /> Save Tag
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
+  if (editingSocial) {
+    return (
+      <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">{editingSocial.index === -1 ? 'Add Social Link' : 'Edit Social Link'}</h1>
+          <button onClick={() => setEditingSocial(null)} className="p-2 hover:bg-white/5 rounded-full">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <form onSubmit={handleSaveSocial} className="glass-card p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Platform Name</label>
+              <input
+                type="text"
+                value={editingSocial.title}
+                onChange={(e) => setEditingSocial({...editingSocial, title: e.target.value})}
+                className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-2"
+                placeholder="e.g. LinkedIn"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">URL</label>
+              <input
+                type="url"
+                value={editingSocial.url}
+                onChange={(e) => setEditingSocial({...editingSocial, url: e.target.value})}
+                className="w-full bg-background/50 border border-white/10 rounded-lg px-4 py-2"
+                placeholder="https://..."
+                required
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-4 pt-4">
+            <button type="button" onClick={() => setEditingSocial(null)} className="px-6 py-2 rounded-lg hover:bg-white/5">
+              Cancel
+            </button>
+            <button type="submit" className="px-6 py-2 bg-accent text-background font-medium rounded-lg hover:bg-accent/90 flex items-center gap-2">
+              <Save className="w-4 h-4" /> Save Social Link
             </button>
           </div>
         </form>
@@ -873,6 +972,12 @@ export function Admin() {
             className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors w-full text-left ${activeTab === 'tags' ? 'bg-accent text-background' : 'hover:bg-white/5'}`}
           >
             <Tag className="w-5 h-5" /> Tags
+          </button>
+          <button
+            onClick={() => setActiveTab('socials')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors w-full text-left ${activeTab === 'socials' ? 'bg-accent text-background' : 'hover:bg-white/5'}`}
+          >
+            <Share2 className="w-5 h-5" /> Socials
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -1220,6 +1325,62 @@ export function Admin() {
             </>
           )}
 
+          {activeTab === 'socials' && (
+            <>
+              <div className="flex justify-end mb-4">
+                <button 
+                  onClick={() => setEditingSocial({ title: '', url: '', index: -1 })}
+                  className="flex items-center gap-2 bg-accent text-background px-4 py-2 rounded-lg font-medium hover:bg-accent/90"
+                >
+                  <Plus className="w-4 h-4" /> Add Social Link
+                </button>
+              </div>
+              <div className="grid gap-4">
+                {(() => {
+                  let socialsList: any[] = [];
+                  try { 
+                    if (settings.social_links) {
+                      socialsList = JSON.parse(settings.social_links);
+                    }
+                  } catch (e) {}
+                  return socialsList.map((social, index) => (
+                    <div key={index} className="glass-card p-4 flex items-center justify-between">
+                      <div className="flex gap-8">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Platform</p>
+                          <h3 className="font-bold text-lg">{social.title}</h3>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">URL</p>
+                          <a href={social.url} target="_blank" rel="noreferrer" className="text-accent hover:underline">{social.url}</a>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <button 
+                          onClick={() => setEditingSocial({ ...social, index })}
+                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteSocial(index)}
+                          className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ));
+                })()}
+                {(!settings.social_links || settings.social_links === '[]') && (
+                  <div className="text-center py-12 text-muted-foreground glass-card">
+                    No social links found. Add your first social link!
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
           {activeTab === 'settings' && (
             <form onSubmit={handleSaveSettings} className="glass-card p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1337,6 +1498,7 @@ export function Admin() {
                   if (deleteConfirm.type === 'highlight') executeDeleteHighlight(deleteConfirm.id as number);
                   if (deleteConfirm.type === 'stat') executeDeleteStat(deleteConfirm.id as number);
                   if (deleteConfirm.type === 'tag') executeDeleteTag(deleteConfirm.id as number);
+                  if (deleteConfirm.type === 'social') executeDeleteSocial(deleteConfirm.id as number);
                   setDeleteConfirm(null);
                 }}
                 className="px-4 py-2 bg-red-500/20 text-red-500 hover:bg-red-500/30 rounded-lg transition-colors font-medium"
